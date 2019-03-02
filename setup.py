@@ -4,9 +4,9 @@ import os, glob
 from setuptools import setup, find_packages
 
 setup(
-    name='requests-http-signature',
-    version='0.1.0',
-    url='https://github.com/kislyuk/requests-http-signature',
+    name='requests-http-signature-jaywink',
+    version='0.1.0.dev0',
+    url='https://github.com/jaywink/requests-http-signature',
     license='Apache Software License',
     author='Andrey Kislyuk',
     author_email='kislyuk@gmail.com',
