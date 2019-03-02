@@ -142,3 +142,21 @@ class HTTPSignatureHeaderAuth(HTTPSignatureAuth):
                       ("signature", sig)]
         request.headers["Signature"] = ",".join('{}="{}"'.format(k, v) for k, v in sig_struct)
         return request
+
+    @classmethod
+    def get_sig_struct(self, request):
+        sig_struct = request.headers["Signature"]
+        return {i.split("=", 1)[0]: i.split("=", 1)[1].strip('"') for i in sig_struct.split(",")}
+
+    @classmethod
+    def verify(self, request, key_resolver):
+        assert "Signature" in request.headers, "No Signature header found"
+        sig_struct = self.get_sig_struct(request)
+        for field in "keyId", "algorithm", "signature":
+            assert field in sig_struct, 'Required signature parameter "{}" not found'.format(field)
+        assert sig_struct["algorithm"] in self.known_algorithms, "Unknown signature algorithm"
+        headers = sig_struct.get("headers", "date").split(" ")
+        sig = base64.b64decode(sig_struct["signature"])
+        sts = self.get_string_to_sign(request, headers)
+        key = key_resolver(key_id=sig_struct["keyId"], algorithm=sig_struct["algorithm"])
+        Crypto(sig_struct["algorithm"]).verify(sig, sts, key)
